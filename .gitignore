@@ -1,3 +1,4 @@
 /.venv
 face_db.pkl
 /__pycache__
+/screenshots

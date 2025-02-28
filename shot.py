@@ -47,8 +47,8 @@ RTSP_URL = f"rtsp://{USERNAME}:{PASSWORD}@{IP}:554/cam/realmonitor?channel=1&sub
 
 
 ##  model init 
-app = FaceAnalysis(name="buffalo_l")
-app.prepare(ctx_id=0, det_size=(640, 640))
+app = FaceAnalysis(name="buffalo_l", providers=['CPUExecutionProvider'])
+app.prepare(ctx_id=-1, det_size=(640, 640))
 
 
 # Initialize video capture with error handling
@@ -97,13 +97,13 @@ while True:
             cv2.imwrite(filename, frame)
             print(f"Screenshot saved: {filename}")    
             alert_type = "Unknown Person" if name == "Unknown" else "Known Person"
-            send_email(
-            f"👤 {alert_type} Detected",
-            f"Person detected: {name}",
-            attachment_path=filename,
-            sender="bahy2002@gmail.com",
-            password="utqx qvvh ebea vuxx",
-            recipients=["M.ahmed201017@gmail.com"])          
+            # send_email(
+            # f"👤 {alert_type} Detected",
+            # f"Person detected: {name}",
+            # attachment_path=filename,
+            # sender="bahy2002@gmail.com",
+            # password="utqx qvvh ebea vuxx",
+            # recipients=["M.ahmed201017@gmail.com"])          
         
     
     # Press 'q' to quit

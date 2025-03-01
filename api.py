@@ -85,7 +85,6 @@ async def chat_completions(request: dict):
                 frame = np.array(image)
                 logging.info("Image received and processed: Shape = %s", frame.shape)                # see image for debugging
                 #save image in a dir
-                cv2.imwrite("image.jpg", frame)
                 
                 
             
@@ -107,6 +106,7 @@ async def chat_completions(request: dict):
                         cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)
                         cv2.putText(frame, name, (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                     0.6, (0, 255, 0), 2, cv2.LINE_AA)
+                        cv2.imwrite("image.jpg", frame)
 
                     # Convert processed image to Base64
                     _, buffer = cv2.imencode(".jpg", frame)
@@ -128,7 +128,11 @@ async def chat_completions(request: dict):
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": f"Recognized faces: {', '.join(recognized_names)}" if recognized_names else "No faces detected."
+                        # "content": f"Recognized faces: {', '.join(recognized_names)}" if recognized_names else "No faces detected."
+                          "content": {
+                    "text": f"Recognized faces: {', '.join(recognized_names)}" if recognized_names else "No faces detected.",
+                    "image": f"data:image/jpeg;base64,{processed_image_base64}"  # Embed Base64 image
+                }
                     },
                     "finish_reason": "stop"
                 }

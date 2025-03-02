@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 import cv2
 import numpy as np
@@ -10,6 +10,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 import uvicorn
 import logging
+from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(
     filename="app.log",  # Log file name
     filemode="a",  # Append mode
@@ -17,13 +18,15 @@ logging.basicConfig(
     level=logging.INFO  # Log level
 )
 logging.info("Starting application...")
-app = FastAPI()
 
-def fix_base64_padding(b64_string):
-    missing_padding = len(b64_string) % 4
-    if missing_padding:
-        b64_string += "=" * (4 - missing_padding)  # Add missing padding
-    return b64_string
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Load known faces
 try:
     with open("known_faces.pkl", "rb") as f:
@@ -48,6 +51,11 @@ def recognize_face(face_embedding, threshold=0.6):
 
 @app.post("/v1/chat/completions")
 async def chat_completions(request: dict):
+    #reload the known faces
+    
+        
+    
+    
     """
     Mimics OpenAI's chat API.
     Expects JSON with a base64-encoded image and optional text messages.
@@ -144,6 +152,39 @@ async def chat_completions(request: dict):
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+#add face to the known faces
+@app.post("/api/add_face")
+async def add_face(name: str = Form(...), image: UploadFile = File(...)):
+    """Add a face to the known faces database."""
+    try:
+        # Read image file
+        image_data = await image.read()
+        image = Image.open(io.BytesIO(image_data)).convert("RGB")
+        frame = np.array(image)
+
+        # Run face recognition
+        faces = app_insight.get(frame)
+
+        if len(faces) != 1:
+            raise HTTPException(status_code=400, detail="Image must contain exactly one face")
+
+        # Add face to known faces
+        embedding = faces[0].embedding
+        known_faces[name] = embedding
+
+        # Save known faces to file
+        with open("known_faces.pkl", "wb") as f:
+            pickle.dump(known_faces, f)
+
+        return {"message": f"Face for '{name}' added successfully!"}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+
+
 
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@ def recognize_face(face_embedding):
 
     for name, known_embedding in known_faces.items():
         score = cosine_similarity([face_embedding], [known_embedding])[0][0]
-        if score > best_score and score > 0.5:  # Threshold (adjust if needed)
+        if score > best_score and score > 0.4:  # Threshold (adjust if needed)
             best_match = name
             best_score = score
 
@@ -40,7 +40,7 @@ def process_frame():
         if current_frame is not None:
             frame_resized = cv2.resize(current_frame, (640, 480))  # Resize for speed
             try:
-                face_results = DeepFace.represent(frame_resized, model_name="Facenet", detector_backend="ssd", enforce_detection=False)
+                face_results = DeepFace.represent(frame_resized, model_name="Facenet", detector_backend="mtcnn", enforce_detection=False)
             except:
                 face_results = None
 
@@ -59,7 +59,7 @@ while True:
 
     frame_counter += 1
 
-    if frame_counter % 5 == 0:  # Only process every 5th frame
+    if frame_counter % 2 == 0:  # Only process every 3th frame
         current_frame = frame.copy()
 
     if face_results:

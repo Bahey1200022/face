@@ -65,6 +65,7 @@ while True:
     if face_results:
         for face in face_results:
             try:
+                print(face)
                 face_embedding = face["embedding"]
                 name = recognize_face(face_embedding)
 

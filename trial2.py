@@ -205,7 +205,7 @@ async def add_face(name: str = Form(...), image: UploadFile = File(...)):
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
         frame = np.array(image)
         
-        analysis = DeepFace.represent(img_path=frame, model_name="Facenet")
+        analysis = DeepFace.represent(img_path=frame, model_name="Facenet",detector_backend="ssd")
         if not analysis:
             raise HTTPException(status_code=400, detail="No face detected")
         
